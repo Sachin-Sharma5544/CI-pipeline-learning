@@ -11,6 +11,9 @@ on:
       - main
 
 jobs: 
+  init: 
+    name: initialise
+
   build: 
     runs-on: ubuntu-latest
 
