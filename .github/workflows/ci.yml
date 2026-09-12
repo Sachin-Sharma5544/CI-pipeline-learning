@@ -13,6 +13,11 @@ on:
 jobs: 
   init: 
     name: initialise
+    runs-on: ubuntu-latest
+    steps:
+      - name: Initial step
+        run: echo "Initialising CI"
+
 
   build: 
     runs-on: ubuntu-latest
