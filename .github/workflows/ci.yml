@@ -47,12 +47,23 @@ jobs:
 
       - name: Set build date
         id: build_date
-        run: echo "date=$(TZ=Asia/Kolkata date +%Y%m%d)" >> "$GITHUB_OUTPUT"
+        env: 
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DATE: DATE=$(TZ=Asia/Kolkata date +%Y%m%d)
+          RUN_COUNT=$(gh run list \
+            --workflow ci.yml \
+            --limit 1000 \
+            --json createdAt \
+            --jq "[.[] | select((.createdAt | fromdateiso8601) >= (now - 19800 | floor))] | length")
+          RUN_COUNT=$((RUN_COUNT + 1))
+
+          echo "version=${DATE}.${RUN_COUNT}" >> "$GITHUB_OUTPUT"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{steps.build_date.outputs.date}}.${{github.run_number}}
+          name: ${{steps.build_date.outputs.version}}
           path: dist/  
 
 
