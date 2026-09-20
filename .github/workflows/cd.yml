@@ -1,0 +1,19 @@
+name: cd 
+
+on: 
+  workflow_run: 
+    workflows: ["ci"]
+    types: 
+      - completed
+  
+  workflow_dispatch: 
+
+
+jobs: 
+  cd: 
+    runs-on: ubuntu-latest
+
+    steps: 
+      - name: Deploy started
+        run: echo "CD pipe line started"
+  
