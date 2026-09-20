@@ -39,13 +39,31 @@ jobs:
       - name: Linting
         run: npm run lint
 
+      - name: Run Unit Tests
+        run: npm run test
+
       - name: Build Project
         run: npm run build
+
+      - name: Set build date
+        id: build_date
+        env: 
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DATE=$(TZ=Asia/Kolkata date +%Y%m%d)
+          RUN_COUNT=$(gh run list \
+            --workflow ci.yml \
+            --limit 1000 \
+            --json createdAt \
+            --jq "[.[] | select((.createdAt | fromdateiso8601) >= (now - 19800 | floor))] | length")
+          RUN_COUNT=$((RUN_COUNT + 1))
+
+          echo "version=${DATE}.${RUN_COUNT}" >> "$GITHUB_OUTPUT"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: react-build
+          name: ${{steps.build_date.outputs.version}}
           path: dist/  
 
 

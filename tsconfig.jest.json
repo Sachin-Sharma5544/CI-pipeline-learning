@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es2023",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "types": ["jest", "@testing-library/jest-dom"],
+    "noEmit": false
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}
