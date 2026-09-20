@@ -45,10 +45,14 @@ jobs:
       - name: Build Project
         run: npm run build
 
+      - name: Set build date
+        id: build_date
+        run: echo "date=$(TZ=Asia/Kolkata date +%Y%m%d)" >> "$GITHUB_OUTPUT"
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: react-build
+          name: ${{steps.build_date.outputs.date}}.${{github.run_number}}
           path: dist/  
 
 
