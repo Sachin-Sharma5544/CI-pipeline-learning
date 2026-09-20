@@ -50,7 +50,7 @@ jobs:
         env: 
           GH_TOKEN: ${{ github.token }}
         run: |
-          DATE: DATE=$(TZ=Asia/Kolkata date +%Y%m%d)
+          DATE=$(TZ=Asia/Kolkata date +%Y%m%d)
           RUN_COUNT=$(gh run list \
             --workflow ci.yml \
             --limit 1000 \
