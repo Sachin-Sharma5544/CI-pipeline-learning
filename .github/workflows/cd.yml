@@ -13,7 +13,7 @@ jobs:
   cd: 
     runs-on: ubuntu-latest
 
-  steps: 
-    - name: Deploy started
-      run: echo "CD pipe line started"
+    steps: 
+      - name: Deploy started
+        run: echo "CD pipe line started"
   
