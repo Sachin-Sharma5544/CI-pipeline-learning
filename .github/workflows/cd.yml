@@ -22,12 +22,11 @@ jobs:
         run: echo "CD pipe line started"
       
       - name: Download Build Artifacts
-        run: echo "download step started"
-        # uses: actions/download-artifact@v4
-        # with: 
-        #   github-token: ${{github.token}}
-        #   run-id: ${{github.event.workflow_run.id}}
-        #   path: dist
+        uses: actions/download-artifact@v4
+        with: 
+          github-token: ${{github.token}}
+          run-id: ${{github.event.workflow_run.id}}
+          path: dist
 
 
   
