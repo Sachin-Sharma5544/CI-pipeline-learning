@@ -32,7 +32,7 @@ jobs:
       - name: Prepare build
         run: |
           mkdir -p dist
-          cp -r downloaded-artifact/*/* dist/
+          cp -r downloaded-artifact/. dist/
 
       - name: Verify build
         run: |
