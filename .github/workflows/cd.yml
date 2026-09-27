@@ -26,13 +26,8 @@ jobs:
         with: 
           github-token: ${{github.token}}
           run-id: ${{github.event.workflow_run.id}}
-          merge-multipe: true
+          merge-multiple: true
           path: dist
-
-      - name: Prepare build
-        run: |
-          mkdir -p dist
-          cp -r downloaded-artifact/. dist/
 
       - name: Verify build
         run: |
