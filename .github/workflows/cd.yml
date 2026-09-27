@@ -29,10 +29,15 @@ jobs:
           merge-multipe: true
           path: dist
 
+      - name: Prepare build
+        run: |
+          mkdir -p dist
+          cp -r downloaded-artifact/*/* dist/
+
       - name: Verify build
         run: |
           echo "Build contents:"
-          ls -la dist
+          find dist -maxdepth 2 -type f
 
       - name: Deploy to Netlify
         uses: netlify/actions/cli@master
