@@ -26,6 +26,7 @@ jobs:
         with: 
           github-token: ${{github.token}}
           run-id: ${{github.event.workflow_run.id}}
+          merge-multipe: true
           path: dist
       - name: Verify build
         run: |
