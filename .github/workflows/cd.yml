@@ -1,55 +1,33 @@
-name: cd 
+name: cd
 
-on: 
-  workflow_run: 
+on:
+  workflow_run:
     workflows: ["ci"]
-    types: 
+    types:
       - completed
-  
-  workflow_dispatch: 
 
-permissions: 
+  workflow_dispatch:
+
+permissions:
   actions: read
   contents: read
 
-jobs: 
-  cd: 
-    if: ${{github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'}}
+jobs:
+  cd:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
-    steps: 
+    steps:
       - name: Deploy started
-        run: echo "CD pipe line started"
-      
+        run: echo "CD pipeline started"
+
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
-        with: 
-          github-token: ${{github.token}}
-          run-id: ${{github.event.workflow_run.id}}
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
           merge-multiple: true
           path: dist
-      - name: Verify build
-        run: |
-          echo "Build contents:"
-          ls -la dist
-
-      - name: Verify build
-        run: |
-          echo "Build contents:"
-          ls -la dist
-
-      - name: Deploy to Netlify
-        uses: netlify/actions/cli@master
-        with:
-          args: deploy --prod --dir=dist
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-
-      - name: Prepare build
-        run: |
-          mkdir -p dist
-          cp -r downloaded-artifact/*/* dist/
 
       - name: Verify build
         run: |
@@ -63,37 +41,3 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-
-      - name: Prepare build
-        run: |
-          mkdir -p dist
-          cp -r downloaded-artifact/. dist/
-
-      - name: Verify build
-        run: |
-          echo "Build contents:"
-          find dist -maxdepth 2 -type f
-
-      - name: Deploy to Netlify
-        uses: netlify/actions/cli@master
-        with:
-          args: deploy --prod --dir=dist
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-
-      - name: Verify build
-        run: |
-          echo "Build contents:"
-          find dist -maxdepth 2 -type f
-
-      - name: Deploy to Netlify
-        uses: netlify/actions/cli@master
-        with:
-          args: deploy --prod --dir=dist
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-
-
-  
