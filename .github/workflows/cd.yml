@@ -5,8 +5,16 @@ on:
     workflows: ["ci"]
     types:
       - completed
+    branches: 
+      - main 
+     
 
   workflow_dispatch:
+    inputs:
+      build_number:
+        description: "Please enter the build number"
+        required: true
+        type: string
 
 permissions:
   actions: read
@@ -21,12 +29,55 @@ jobs:
       - name: Deploy started
         run: echo "CD pipeline started"
 
-      - name: Download Build Artifacts
+      # For manual deployment, find the workflow run
+      # associated with the build number entered by the user.
+      - name: Find manual build artifact
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        id: find_artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          ARTIFACT_INFO=$(gh api --paginate \
+            "repos/${{ github.repository }}/actions/artifacts" |
+            jq -r --arg name "$BUILD_NUMBER" '
+              .artifacts[]
+              | select(.name == $name and .expired == false)
+              | [.id, .workflow_run.id]
+              | @tsv
+            ' | head -n 1)
+
+          if [ -z "$ARTIFACT_INFO" ]; then
+            echo "Artifact $BUILD_NUMBER not found"
+            exit 1
+          fi
+
+          ARTIFACT_ID=$(echo "$ARTIFACT_INFO" | cut -f1)
+          RUN_ID=$(echo "$ARTIFACT_INFO" | cut -f2)
+
+          echo "Artifact ID: $ARTIFACT_ID"
+          echo "Workflow Run ID: $RUN_ID"
+
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      # Automatic deployment
+      - name: Download automatic build
+        if: ${{ github.event_name == 'workflow_run' }}
         uses: actions/download-artifact@v4
         with:
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
           merge-multiple: true
+          path: dist
+
+      # Manual deployment
+      - name: Download manual build
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.find_artifact.outputs.run_id }}
+          name: ${{ inputs.build_number }}
           path: dist
 
       - name: Verify build
