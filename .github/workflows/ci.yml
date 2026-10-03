@@ -44,6 +44,11 @@ jobs:
 
       - name: Run Security Audit
         run: npm audit --audit-level=high 
+      
+      - name: Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Project
         run: npm run build
