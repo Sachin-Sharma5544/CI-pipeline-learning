@@ -54,6 +54,9 @@ jobs:
         uses: semgrep/semgrep-action@v1
         with:
           config: p/default
+      
+      - name: License Scan
+        run: npx license-checker --summary
 
       - name: Build Project
         run: npm run build
