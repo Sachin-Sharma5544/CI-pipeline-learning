@@ -7,10 +7,20 @@ on:
       - completed
     branches: 
       - main 
+      - develop
+
      
 
   workflow_dispatch:
     inputs:
+      environment: 
+        description: "Select deployment environment"
+        required: true
+        type: choice
+        options: 
+          - development
+          - production
+
       build_number:
         description: "Please enter the build number"
         required: true
@@ -24,7 +34,7 @@ jobs:
   cd:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    environment: development
+    environment: ${{github.event_name == 'workflow_dispatch' && inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'development')}}
 
     steps:
       - name: Deploy started
