@@ -1,0 +1,95 @@
+name: cd-manual
+
+on: 
+  workflow_dispatch: 
+    inputs: 
+      environment: 
+        description: Select deployment environment
+        required: true
+        type: choice
+        options: 
+          - development
+          - production
+      
+      build_number: 
+        description: Please enter the build number
+        required: true
+        type: string
+
+      
+permissions: 
+  actions: read
+  contents: read
+
+jobs: 
+  cd: 
+    runs-on: ubuntu-latest
+    environment: ${{inputs.environment}}
+
+    steps: 
+      - name: "Deployment started"
+        run: echo "Deployment has started"
+
+      - name: "Find manual build artifact"
+        id: artifact_lookup
+        env: 
+          GH_TOKEN: ${{github.token}}
+          BUILD_NUMBER: ${{inputs.build_number}}
+        run: |
+          RUN_ID=$(gh api --paginate \
+            "repos/${{ github.repository }}/actions/artifacts" \
+            --jq '.artifacts[] | select(.name == env.BUILD_NUMBER and .expired == false and .workflow_run.id != null) | .workflow_run.id' \
+            | head -n 1)
+
+          if [ -z "$RUN_ID" ]; then
+            echo "Build artifact not found"
+            exit 1
+          fi
+
+          echo "Found CI run: $RUN_ID"
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download build artifcact
+        uses: actions/download-artifact@v4
+        with: 
+          name: ${{inputs.build_number}}
+          github-token: ${{github.token}}
+          run-id: ${{ steps.artifact_lookup.outputs.run_id }}
+          path: dist
+
+      - name: Verify buld artifact
+        run: |
+          echo "Downloaded build contents"
+          ls -la dist
+
+          if [ ! -f "dist/index.html" ]; then
+            echo "Build verification failed"
+            exit 1
+          fi
+
+          echo "Build verification successful"
+
+      - name: Show environment  
+        run: echo "Deploying to ${{ inputs.environment}}"
+
+      - name: Deploy to Netlify
+        uses: netlify/actions/cli@master
+        with:
+          args: ${{ inputs.environment == 'production' && 'deploy --prod --dir=dist' || 'deploy --dir=dist' }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      
+      - name: Deployment Summary
+        if: ${{ always() }}
+        run: |
+          echo "## Manual Deployment Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Property | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Environment | ${{ inputs.environment }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Build Number | ${{ inputs.build_number }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| CI Run ID | ${{ steps.artifact_lookup.outputs.run_id }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Deployment Status | ${{ job.status }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Trigger | ${{ github.event_name }} |" >> "$GITHUB_STEP_SUMMARY"
+
