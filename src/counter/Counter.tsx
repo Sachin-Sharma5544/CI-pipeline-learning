@@ -4,14 +4,21 @@ const Counter = () => {
   const [count, setCount] = useState(0);
   return (
     <>
-      <h1>Count: <span style={{color: "darkred"}}>{count}</span></h1>
+      <h1>
+        Count: <span style={{ color: "darkred" }}>{count}</span>
+      </h1>
 
       <button onClick={() => setCount((prevCount) => prevCount + 1)}>
         Increment
       </button>
 
       <button
-        onClick={() => setCount((prevCount) => prevCount - 1)}
+        onClick={() =>
+          setCount((prevCount) => {
+            if (count === 0) return count;
+            return prevCount - 1;
+          })
+        }
         style={{ margin: "10px 0px" }}
       >
         Decrement
