@@ -9,6 +9,7 @@ on:
   pull_request: 
     branches: 
       - main
+      - develop
   
   workflow_dispatch: 
 
@@ -22,6 +23,7 @@ jobs:
 
 
   build: 
+    name: CI Validation
     runs-on: ubuntu-latest
 
     steps: 
